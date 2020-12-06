@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 
-import xml.etree.ElementTree as ET
+import scrapy
+from scrapy.crawler import CrawlerProcess
+from maven_repository_spider import MavenRepositorySpider 
 import sys
+import xml.etree.ElementTree as ET
 
 path_pom = sys.argv[1] # path to maven xml
 
@@ -20,3 +23,16 @@ for el in root:
                     dependency['artifactId'] = i.text
 
 print(dependencies)
+
+process = CrawlerProcess(settings={
+    'BOT_NAME': 'maven_repository_scrapper',
+    'FEED_FORMAT': 'json',
+    'USER_AGENT': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36',
+    'DOWNLOAD_DELAY': 0.75,
+    'ITEM_PIPELINES': {
+        #'pipelines.FilterPipeline': 300,
+        #'pipelines.SaveReviewPipeline': 400
+        }}
+    )
+process.crawl(MavenRepositorySpider, dependencies=dependencies)
+process.start()
